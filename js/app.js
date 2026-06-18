@@ -14,20 +14,20 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 // ---------- STATE ----------
 let state = {
   kelas:[], siswa:[], jadwal:[], absensi:{}, nilai:{}, jurnal:[],
-  rpp:[], tugas:[], nilaiTugas:{}, soal:[], pesan:[], bcast:[],
+  rpp:[], tugas:[], nilaiTugas:{}, soal:[],
   profil:{nama:'Bu Rahma, S.Pd',nip:'19850512201001',mapel:'IPA',hp:'',email:''},
   sekolah:{nama:'SMP Negeri 1',npsn:'',ta:'2025/2026',sem:'Genap',kurk:'Kurikulum Merdeka',kkm:75,alamat:''},
-  currentPage:'dashboard', currentChat:null, calYear:0, calMonth:0,
+  currentPage:'dashboard', calYear:0, calMonth:0,
   nilaiKolom:{}, editTugasId:null
 };
 
 function loadState(){
-  ['kelas','siswa','jadwal','absensi','nilai','jurnal','rpp','tugas','nilaiTugas','soal','pesan','bcast','profil','sekolah','nilaiKolom'].forEach(k=>{
+  ['kelas','siswa','jadwal','absensi','nilai','jurnal','rpp','tugas','nilaiTugas','soal','profil','sekolah','nilaiKolom'].forEach(k=>{
     const v=DB.get(k);if(v!==null)state[k]=v;
   });
 }
 function saveState(){
-  ['kelas','siswa','jadwal','absensi','nilai','jurnal','rpp','tugas','nilaiTugas','soal','pesan','bcast','profil','sekolah','nilaiKolom'].forEach(k=>{
+  ['kelas','siswa','jadwal','absensi','nilai','jurnal','rpp','tugas','nilaiTugas','soal','profil','sekolah','nilaiKolom'].forEach(k=>{
     DB.set(k,state[k]);
   });
 }
@@ -61,8 +61,6 @@ const PAGE_INFO={
   jurnal:{title:'Jurnal Mengajar',sub:'Dokumentasi kegiatan belajar mengajar'},
   rpp:{title:'RPP & Modul Ajar',sub:'Buat dan kelola RPP dengan bantuan AI'},
   tugas:{title:'Tugas & Kuis',sub:'Kelola penugasan dan penilaian'},
-  raport:{title:'Raport Digital',sub:'Raport otomatis dari rekap semua nilai'},
-  komunikasi:{title:'Komunikasi',sub:'Pesan ke wali murid dan rekan guru'},
   banksoal:{title:'Bank Soal',sub:'Koleksi soal ulangan dan kuis'},
   analitik:{title:'Analitik Kelas',sub:'Laporan performa dan tren belajar'},
   rekap:{title:'Rekap & Cetak',sub:'Export dan cetak berbagai laporan'},
@@ -87,7 +85,7 @@ function nav(id){
     dashboard:renderDashboard, kelas:renderKelas, siswa:renderSiswa,
     jadwal:renderJadwal, absensi:renderAbsensi, nilai:renderNilai,
     jurnal:renderJurnal, rpp:renderRPP, tugas:renderTugas,
-    raport:renderRaport, komunikasi:renderKomunikasi, banksoal:renderSoal,
+    banksoal:renderSoal,
     analitik:renderAnalitik, pengaturan:renderPengaturan
   };
   if(renders[id])renders[id]();
@@ -123,7 +121,7 @@ function confirm2(msg,cb){
 function populateAllSelects(){
   const kelasOpts=state.kelas.map(k=>`<option value="${k.id}">${k.nama} - ${k.mapel}</option>`).join('');
   const allOpt='<option value="">-- Semua Kelas --</option>';
-  ['filterKelasS','absKelas','nilaiKelas','filterJurnalKelas','rpp-kelas','tg-kelas','raportKelas','analitikKelas','filterTugasKelas','j-kelas','riwayatAbsKelas'].forEach(id=>{
+  ['filterKelasS','absKelas','nilaiKelas','filterJurnalKelas','rpp-kelas','tg-kelas','analitikKelas','filterTugasKelas','j-kelas','riwayatAbsKelas'].forEach(id=>{
     const el=document.getElementById(id);if(!el)return;
     if(id==='filterKelasS'||id==='riwayatAbsKelas')el.innerHTML=allOpt+kelasOpts;
     else el.innerHTML=kelasOpts||(id==='rpp-kelas'?'<option value="">-- Pilih Kelas --</option>':'<option value="">-- Pilih Kelas --</option>');
@@ -132,9 +130,6 @@ function populateAllSelects(){
   ['s-kelas','jd-kelas'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.innerHTML=kelasOpts;
   });
-  // Broadcast tujuan
-  const bEl=document.getElementById('bcast-tujuan');
-  if(bEl)bEl.innerHTML=state.kelas.map(k=>`<option>Wali Murid Kelas ${k.nama}</option>`).join('')+'<option>Semua Guru</option><option>Kepala Sekolah</option>';
   // Mapel filter soal
   const mEl=document.getElementById('filterSoalMapel');
   if(mEl){const mapels=[...new Set(state.soal.map(s=>s.mapel))];mEl.innerHTML='<option value="">Semua Mapel</option>'+mapels.map(m=>`<option value="${m}">${m}</option>`).join('')}
@@ -261,10 +256,6 @@ function saveSiswa(){
     kelas:document.getElementById('s-kelas').value,
     nama:document.getElementById('s-nama').value.trim(),
     jk:document.getElementById('s-jk').value,
-    tglLahir:document.getElementById('s-tgl').value,
-    tmpLahir:document.getElementById('s-tmp').value.trim(),
-    wali:document.getElementById('s-wali').value.trim(),
-    wa:document.getElementById('s-wa').value.trim(),
     alamat:document.getElementById('s-alamat').value.trim(),
     status:document.getElementById('s-status').value
   };
@@ -282,10 +273,6 @@ function editSiswa(id){
   document.getElementById('s-kelas').value=s.kelas;
   document.getElementById('s-nama').value=s.nama;
   document.getElementById('s-jk').value=s.jk||'L';
-  document.getElementById('s-tgl').value=s.tglLahir||'';
-  document.getElementById('s-tmp').value=s.tmpLahir||'';
-  document.getElementById('s-wali').value=s.wali||'';
-  document.getElementById('s-wa').value=s.wa||'';
   document.getElementById('s-alamat').value=s.alamat||'';
   document.getElementById('s-status').value=s.status||'Aktif';
   document.getElementById('modalSiswaTitle').textContent='Edit Siswa: '+s.nama;
@@ -314,8 +301,6 @@ function detailSiswa(id){
       </div>
     </div>
     <div class="fr2" style="gap:10px;margin-bottom:14px">
-      <div style="font-size:12px"><b>Tempat, Tgl Lahir:</b><br>${s.tmpLahir||'-'}, ${s.tglLahir||'-'}</div>
-      <div style="font-size:12px"><b>Wali Murid:</b><br>${s.wali||'-'} (${s.wa||'-'})</div>
       <div style="font-size:12px"><b>Alamat:</b><br>${s.alamat||'-'}</div>
     </div>
     <div class="fr3" style="gap:10px">
@@ -332,14 +317,14 @@ function renderSiswa(){
   const kelas=state.kelas.find(k=>k.id===filterKelas);
   document.getElementById('siswa-sub').textContent=`${list.length} siswa${kelas?' - Kelas '+kelas.nama:''}`;
   const tbody=document.getElementById('tbl-siswa');
-  if(!list.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">Belum ada data siswa</td></tr>';return}
+  if(!list.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">Belum ada data siswa</td></tr>';return}
   tbody.innerHTML=list.map((s,i)=>{
     const k=state.kelas.find(k=>k.id===s.kelas);
     const col=avColor(s.nama);
     return `<tr>
       <td>${i+1}</td><td>${s.nis||'-'}</td>
       <td><div class="av-row"><div class="av" style="background:linear-gradient(135deg,${col},${col}cc)">${avInitial(s.nama)}</div><div><div style="font-weight:700;font-size:12.5px">${s.nama}</div><div style="font-size:10.5px;color:var(--muted)">${k?.nama||'-'}</div></div></div></td>
-      <td>${s.jk}</td><td>${s.tglLahir||'-'}</td><td>${s.wali||'-'}</td><td>${s.wa||'-'}</td>
+      <td>${s.jk}</td>
       <td><span class="badge ${s.status==='Aktif'?'bg-success':'bg-danger'}">${s.status}</span></td>
       <td><div style="display:flex;gap:3px">
         <button class="btn btn-outline btn-sm btn-icon" onclick="detailSiswa('${s.id}')" title="Detail"><i class="fas fa-eye"></i></button>
@@ -851,192 +836,6 @@ function renderTugas(){
   }).join('');
 }
 
-// ============ RAPORT ============
-function renderRaport(){
-  const kelas=document.getElementById('raportKelas')?.value;
-  const wrap=document.getElementById('tbl-raport-wrap');
-  if(!kelas){wrap.innerHTML='<div class="empty"><i class="fas fa-file-invoice"></i><p>Pilih kelas terlebih dahulu</p></div>';return}
-  const siswaK=state.siswa.filter(s=>s.kelas===kelas&&s.status==='Aktif');
-  const kkm=state.sekolah.kkm||75;
-  const jenis=['UH','UTS','UAS','TUGAS'];
-  wrap.innerHTML=`<table>
-    <thead><tr><th>No</th><th>Nama Siswa</th><th>UH</th><th>UTS</th><th>UAS</th><th>Tugas</th><th>Nilai Akhir</th><th>Predikat</th><th>Kelakuan</th><th>Aksi</th></tr></thead>
-    <tbody>${siswaK.map((s,i)=>{
-      const nilSiswa=state.nilai?.[s.id]||{};
-      const getAvg=j=>{const vals=Object.values(nilSiswa[j]||{});return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null};
-      const avgUH=getAvg('UH');const avgUTS=getAvg('UTS');const avgUAS=getAvg('UAS');const avgT=getAvg('TUGAS');
-      const avgs=[avgUH,avgUTS,avgUAS,avgT].filter(v=>v!==null);
-      const final=avgs.length?avgs.reduce((a,b)=>a+b,0)/avgs.length:0;
-      const col=avColor(s.nama);
-      return `<tr>
-        <td>${i+1}</td>
-        <td><div class="av-row"><div class="av" style="background:linear-gradient(135deg,${col},${col}cc)">${avInitial(s.nama)}</div><b>${s.nama}</b></div></td>
-        <td><span class="${avgUH?scoreColor(avgUH,kkm):''}"">${avgUH?avgUH.toFixed(1):'-'}</span></td>
-        <td><span class="${avgUTS?scoreColor(avgUTS,kkm):''}"">${avgUTS?avgUTS.toFixed(1):'-'}</span></td>
-        <td><span class="${avgUAS?scoreColor(avgUAS,kkm):''}"">${avgUAS?avgUAS.toFixed(1):'-'}</span></td>
-        <td><span class="${avgT?scoreColor(avgT,kkm):''}"">${avgT?avgT.toFixed(1):'-'}</span></td>
-        <td><span class="val-cell ${scoreColor(final,kkm)}">${final>0?final.toFixed(1):'-'}</span></td>
-        <td>${predikat(final)}</td>
-        <td><span class="badge bg-success">Baik</span></td>
-        <td><button class="btn btn-outline btn-sm" onclick="printSiswaRaport('${s.id}')"><i class="fas fa-print"></i></button></td>
-      </tr>`
-    }).join('')}</tbody>
-  </table>`;
-}
-function printSiswaRaport(sid){
-  const s=state.siswa.find(x=>x.id===sid);if(!s)return;
-  const k=state.kelas.find(k=>k.id===s.kelas);
-  const nilSiswa=state.nilai?.[sid]||{};
-  const getAvg=j=>{const vals=Object.values(nilSiswa[j]||{});return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null};
-  const avgUH=getAvg('UH');const avgUTS=getAvg('UTS');const avgUAS=getAvg('UAS');const avgT=getAvg('TUGAS');
-  const avgs=[avgUH,avgUTS,avgUAS,avgT].filter(v=>v!==null);
-  const final=avgs.length?avgs.reduce((a,b)=>a+b,0)/avgs.length:0;
-  const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Raport ${s.nama}</title>
-  <style>body{font-family:Arial,sans-serif;padding:40px;font-size:13px;color:#1e293b}h2{text-align:center;font-size:18px;margin-bottom:4px}
-  .sub{text-align:center;color:#64748b;font-size:12px;margin-bottom:20px}table{width:100%;border-collapse:collapse;margin-top:14px}
-  th,td{padding:8px 12px;border:1px solid #cbd5e1;font-size:12.5px}th{background:#f8fafc;font-weight:700}
-  .sig{display:flex;justify-content:space-between;margin-top:50px;font-size:12px}
-  .sig-box{text-align:center;min-width:180px}hr{border:none;border-top:1px solid #334155;margin-top:50px}</style>
-  </head><body>
-  <h2>${state.sekolah.nama||'Nama Sekolah'}</h2>
-  <div class="sub">RAPORT DIGITAL ${state.sekolah.ta||'2025/2026'} SEMESTER ${state.sekolah.sem||'GENAP'}</div>
-  <table><tr><td width="35%"><b>Nama Siswa</b></td><td>${s.nama}</td></tr>
-  <tr><td><b>NIS</b></td><td>${s.nis||'-'}</td></tr>
-  <tr><td><b>Kelas</b></td><td>${k?.nama||'-'}</td></tr>
-  <tr><td><b>Jenis Kelamin</b></td><td>${s.jk==='L'?'Laki-laki':'Perempuan'}</td></tr></table>
-  <table style="margin-top:16px"><thead><tr><th>No</th><th>Mata Pelajaran</th><th>Nilai UH</th><th>UTS</th><th>UAS</th><th>Tugas</th><th>Nilai Akhir</th><th>Predikat</th></tr></thead>
-  <tbody><tr><td>1</td><td>${k?.mapel||state.profil.mapel||'-'}</td>
-  <td>${avgUH?avgUH.toFixed(1):'-'}</td><td>${avgUTS?avgUTS.toFixed(1):'-'}</td>
-  <td>${avgUAS?avgUAS.toFixed(1):'-'}</td><td>${avgT?avgT.toFixed(1):'-'}</td>
-  <td><b>${final>0?final.toFixed(1):'-'}</b></td><td>${final>=90?'A':final>=80?'B':final>=70?'C':'D'}</td>
-  </tr></tbody></table>
-  <div class="sig"><div class="sig-box">Orang Tua/Wali<hr>${s.wali||'________________'}</div>
-  <div class="sig-box">Wali Kelas<hr>${state.profil.nama||'-'}</div>
-  <div class="sig-box">Kepala Sekolah<hr>________________</div></div>
-  </body></html>`);
-  w.document.close();w.focus();setTimeout(()=>w.print(),700);
-}
-function exportRaportCSV(){
-  const kelas=document.getElementById('raportKelas')?.value;
-  if(!kelas){toast('Pilih kelas terlebih dahulu','error');return}
-  const siswaK=state.siswa.filter(s=>s.kelas===kelas&&s.status==='Aktif');
-  let csv='No,Nama,NIS,UH,UTS,UAS,Tugas,Nilai Akhir,Predikat\n';
-  siswaK.forEach((s,i)=>{
-    const nilSiswa=state.nilai?.[s.id]||{};
-    const getAvg=j=>{const v=Object.values(nilSiswa[j]||{});return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
-    const avgs=[getAvg('UH'),getAvg('UTS'),getAvg('UAS'),getAvg('TUGAS')].filter(v=>v!==null);
-    const final=avgs.length?avgs.reduce((a,b)=>a+b,0)/avgs.length:0;
-    csv+=`${i+1},"${s.nama}",${s.nis||'-'},${getAvg('UH')?.toFixed(1)||'-'},${getAvg('UTS')?.toFixed(1)||'-'},${getAvg('UAS')?.toFixed(1)||'-'},${getAvg('TUGAS')?.toFixed(1)||'-'},${final?final.toFixed(1):'-'},${final>=90?'A':final>=80?'B':final>=70?'C':'D'}\n`;
-  });
-  downloadCSV(csv,'raport_'+state.kelas.find(k=>k.id===kelas)?.nama+'.csv');
-}
-function printRaport(){
-  const kelas=document.getElementById('raportKelas')?.value;
-  if(!kelas){toast('Pilih kelas terlebih dahulu','error');return}
-  const siswaK=state.siswa.filter(s=>s.kelas===kelas&&s.status==='Aktif');
-  siswaK.forEach(s=>setTimeout(()=>printSiswaRaport(s.id),200));
-}
-
-// ============ KOMUNIKASI ============
-function renderKomunikasi(){
-  renderChatList();
-  renderBcastHistory();
-  const bKelas=state.kelas.map(k=>`<option>Wali Murid Kelas ${k.nama}</option>`).join('');
-  document.getElementById('bcast-tujuan').innerHTML=bKelas+'<option>Semua Guru</option><option>Kepala Sekolah</option>';
-}
-function renderChatList(){
-  const list=document.getElementById('chatList');
-  if(!state.pesan.length){list.innerHTML='<div class="empty" style="padding:20px"><i class="fas fa-comments"></i><p style="font-size:12px">Belum ada pesan</p></div>';return}
-  list.innerHTML=state.pesan.map(p=>{
-    const last=p.msgs[p.msgs.length-1];
-    const unread=p.msgs.filter(m=>!m.read&&m.from!=='guru').length;
-    const col=avColor(p.kepada);
-    return `<div class="chat-item ${state.currentChat===p.id?'active':''}" onclick="openChat('${p.id}')">
-      <div class="av" style="background:linear-gradient(135deg,${col},${col}cc)">${avInitial(p.kepada)}</div>
-      <div style="flex:1;min-width:0">
-        <div class="c-name">${p.kepada}</div>
-        <div class="c-prev">${last?.teks||''}</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div class="c-time">${last?.waktu||''}</div>
-        ${unread?`<div class="c-unread">${unread}</div>`:''}
-      </div>
-    </div>`
-  }).join('');
-}
-function openChat(id){
-  state.currentChat=id;
-  const p=state.pesan.find(x=>x.id===id);if(!p)return;
-  p.msgs.forEach(m=>{if(m.from!=='guru')m.read=true});
-  saveState();renderChatList();
-  const box=document.getElementById('chatMessages');
-  box.innerHTML=p.msgs.map(m=>`
-    <div style="display:flex;flex-direction:column;align-items:${m.from==='guru'?'flex-end':'flex-start'}">
-      <div class="msg ${m.from==='guru'?'msg-out':'msg-in'}">
-        ${m.teks}
-        <span class="msg-time">${m.waktu}</span>
-      </div>
-    </div>`).join('');
-  box.scrollTop=box.scrollHeight;
-  document.getElementById('chatInputBar').style.display='flex';
-  updateBadges();
-}
-function sendChat(){
-  const input=document.getElementById('chatInput');
-  const teks=input.value.trim();if(!teks||!state.currentChat)return;
-  const p=state.pesan.find(x=>x.id===state.currentChat);if(!p)return;
-  const now=new Date();
-  p.msgs.push({id:uid(),from:'guru',teks,waktu:now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}),read:true});
-  input.value='';saveState();openChat(state.currentChat);
-}
-function buatPercakapan(){
-  const kepada=document.getElementById('pm-kepada').value.trim();
-  const kat=document.getElementById('pm-kat').value;
-  const pesan=document.getElementById('pm-pesan').value.trim();
-  if(!kepada||!pesan){toast('Lengkapi semua field','error');return}
-  const now=new Date();
-  const obj={
-    id:uid(),kepada,kat,
-    msgs:[{id:uid(),from:'guru',teks:pesan,waktu:now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}),read:true}]
-  };
-  state.pesan.unshift(obj);
-  saveState();closeModal('modalPesan');renderKomunikasi();
-  state.currentChat=obj.id;openChat(obj.id);
-  document.getElementById('pm-kepada').value='';document.getElementById('pm-pesan').value='';
-  toast('Percakapan dibuat');
-}
-const bcastTemplates={
-  info:'Yth. Bapak/Ibu Wali Murid,\nDengan hormat kami informasikan bahwa [ISI PENGUMUMAN].\nDemikian informasi ini kami sampaikan. Terima kasih atas perhatiannya.\n\nHormat kami,\n'+state.profil.nama,
-  absen:'Yth. Bapak/Ibu Wali Murid,\nDengan hormat kami sampaikan bahwa putra/putri Bapak/Ibu [NAMA SISWA] tercatat tidak hadir tanpa keterangan pada [TANGGAL]. Mohon konfirmasi dan perhatian lebih lanjut.\n\nTerima kasih.',
-  nilai:'Yth. Bapak/Ibu Wali Murid,\nKami informasikan hasil nilai ulangan putra/putri Bapak/Ibu: [INFORMASI NILAI]. Mohon untuk terus mendampingi belajar di rumah.\n\nSalam,',
-  ulangan:'Yth. Bapak/Ibu Wali Murid,\nDiberitahukan bahwa akan dilaksanakan ulangan harian [MAPEL] pada [TANGGAL]. Mohon putra/putri Bapak/Ibu mempersiapkan diri dengan belajar materi [MATERI].\n\nTerima kasih.',
-  rapat:'Yth. Bapak/Ibu Wali Murid,\nKami mengundang Bapak/Ibu untuk hadir pada rapat wali murid yang akan dilaksanakan pada:\nHari/Tanggal: [TANGGAL]\nPukul: [JAM]\nTempat: [TEMPAT]\nAgenda: [AGENDA]\n\nKehadiran Bapak/Ibu sangat kami harapkan. Terima kasih.'
-};
-function templateBcast(val){if(val&&bcastTemplates[val])document.getElementById('bcast-pesan').value=bcastTemplates[val]}
-function sendBroadcast(){
-  const tujuan=document.getElementById('bcast-tujuan').value;
-  const pesan=document.getElementById('bcast-pesan').value.trim();
-  if(!pesan){toast('Tulis pesan terlebih dahulu','error');return}
-  const now=new Date();
-  state.bcast.unshift({id:uid(),tujuan,pesan,waktu:now.toLocaleString('id-ID')});
-  saveState();renderBcastHistory();document.getElementById('bcast-pesan').value='';
-  document.getElementById('bcast-jenis').value='';
-  toast('Pengumuman berhasil dikirim ke '+tujuan);
-}
-function renderBcastHistory(){
-  const el=document.getElementById('bcast-history');if(!el)return;
-  if(!state.bcast.length){el.innerHTML='<div style="font-size:11.5px;color:var(--muted);padding:8px 0">Belum ada riwayat</div>';return}
-  el.innerHTML=state.bcast.slice(0,10).map(b=>`
-    <div style="border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:6px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-        <span style="font-size:11px;font-weight:700">${b.tujuan}</span>
-        <span style="font-size:10px;color:var(--muted)">${b.waktu}</span>
-      </div>
-      <div style="font-size:11px;color:var(--text);line-height:1.5;white-space:pre-line">${b.pesan.slice(0,100)}${b.pesan.length>100?'...':''}</div>
-    </div>`).join('');
-}
-
 // ============ BANK SOAL ============
 function saveSoal(){
   const id=document.getElementById('soal-edit-id').value;
@@ -1236,9 +1035,6 @@ function renderDashboard(){
   state.tugas.forEach(t=>{
     if(t.deadline){const dl=new Date(t.deadline);const diff=Math.ceil((dl-new Date())/(1000*60*60*24));if(diff>=0&&diff<=3)notifs.push({type:'warn',msg:`<b>Deadline tugas</b> "${t.judul}" ${diff===0?'hari ini':diff===1?'besok':'dalam '+diff+' hari'}`})}
   });
-  // Pesan belum dibaca
-  const unread=state.pesan.reduce((a,p)=>a+p.msgs.filter(m=>!m.read&&m.from!=='guru').length,0);
-  if(unread)notifs.push({type:'info',msg:`<b>${unread} pesan</b> belum dibaca`});
   if(!notifs.length)notifs.push({type:'success',msg:'Semua baik! Tidak ada notifikasi saat ini.'});
   document.getElementById('dash-notif-count').textContent=notifs.length+' notifikasi';
   document.getElementById('dash-notif').innerHTML=notifs.map(n=>`<div class="alert al-${n.type}"><i class="fas ${n.type==='danger'?'fa-exclamation-circle':n.type==='warn'?'fa-clock':n.type==='info'?'fa-envelope':'fa-check-circle'}"></i><div>${n.msg}</div></div>`).join('');
@@ -1298,9 +1094,6 @@ function getAbsensiSiswa(sid){
 
 // ============ BADGE UPDATE ============
 function updateBadges(){
-  const unread=state.pesan.reduce((a,p)=>a+p.msgs.filter(m=>!m.read&&m.from!=='guru').length,0);
-  const nb=document.getElementById('nb-pesan');if(nb)nb.textContent=unread;
-  const nd=document.getElementById('notifDot');if(nd)nd.style.display=unread?'block':'none';
   const nbSoal=document.getElementById('nb-soal');if(nbSoal)nbSoal.textContent=state.soal.length;
   const nbSiswa=document.getElementById('nb-siswa');if(nbSiswa)nbSiswa.textContent=state.siswa.filter(s=>s.status==='Aktif').length;
   // Tugas belum dinilai
@@ -1317,10 +1110,10 @@ function downloadCSV(csv,filename){
   toast('File CSV berhasil diunduh');
 }
 function exportSiswaCSV(){
-  let csv='No,NIS,Nama,Kelas,L/P,Tgl Lahir,Wali,No.WA,Status\n';
+  let csv='No,NIS,Nama,Kelas,L/P,Status\n';
   state.siswa.forEach((s,i)=>{
     const k=state.kelas.find(k=>k.id===s.kelas);
-    csv+=`${i+1},${s.nis||''},${s.nama},${k?.nama||''},${s.jk},${s.tglLahir||''},"${s.wali||''}",${s.wa||''},${s.status}\n`;
+    csv+=`${i+1},${s.nis||''},${s.nama},${k?.nama||''},${s.jk},${s.status}\n`;
   });
   downloadCSV(csv,'data_siswa.csv');
 }
@@ -1369,7 +1162,7 @@ function globalSearchFn(q){
 // ============ RESET ============
 function resetData(){
   confirm2('RESET SEMUA DATA? Tindakan ini tidak bisa dibatalkan dan akan menghapus semua data aplikasi.',()=>{
-    ['kelas','siswa','jadwal','absensi','nilai','jurnal','rpp','tugas','nilaiTugas','soal','pesan','bcast','nilaiKolom'].forEach(k=>DB.del(k));
+    ['kelas','siswa','jadwal','absensi','nilai','jurnal','rpp','tugas','nilaiTugas','soal','nilaiKolom'].forEach(k=>DB.del(k));
     location.reload();
   });
 }
