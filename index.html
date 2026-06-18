@@ -6,7 +6,7 @@
 <title>My AdTeach — Aplikasi Administrasi Guru</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -32,8 +32,6 @@
     <div class="s-label">Inovasi</div>
     <div class="nav-item" onclick="nav('rpp')"><span class="nav-icon"><i class="fas fa-file-alt"></i></span>RPP & Modul Ajar<span class="nav-badge nb-purple">AI</span></div>
     <div class="nav-item" onclick="nav('tugas')"><span class="nav-icon"><i class="fas fa-tasks"></i></span>Tugas & Kuis<span class="nav-badge nb-orange" id="nb-tugas" style="display:none">!</span></div>
-    <div class="nav-item" onclick="nav('raport')"><span class="nav-icon"><i class="fas fa-file-invoice"></i></span>Raport Digital</div>
-    <div class="nav-item" onclick="nav('komunikasi')"><span class="nav-icon"><i class="fas fa-comments"></i></span>Komunikasi<span class="nav-badge nb-red" id="nb-pesan">0</span></div>
     <div class="nav-item" onclick="nav('banksoal')"><span class="nav-icon"><i class="fas fa-database"></i></span>Bank Soal<span class="nav-badge nb-blue" id="nb-soal">0</span></div>
     <div class="nav-item" onclick="nav('analitik')"><span class="nav-icon"><i class="fas fa-chart-line"></i></span>Analitik Kelas</div>
     <div class="s-label">Dokumen</div>
@@ -58,7 +56,6 @@
     </div>
     <div class="h-spacer"></div>
     <div class="h-search"><i class="fas fa-search"></i><input type="text" id="globalSearch" placeholder="Cari siswa, nilai, jurnal..." oninput="globalSearchFn(this.value)"></div>
-    <div class="hbtn" onclick="nav('komunikasi')" title="Pesan"><i class="fas fa-bell"></i><span class="notif-dot" id="notifDot"></span></div>
     <div class="date-chip" id="dateChip"></div>
   </header>
 
@@ -117,7 +114,7 @@
           <button class="btn btn-primary btn-sm" onclick="openModal('modalSiswa')"><i class="fas fa-plus"></i> Tambah</button>
         </div>
         <div class="tbl-wrap"><table>
-          <thead><tr><th>No</th><th>NIS</th><th>Nama Siswa</th><th>L/P</th><th>Tgl Lahir</th><th>Wali Murid</th><th>No. WA</th><th>Status</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>No</th><th>NIS</th><th>Nama Siswa</th><th>L/P</th><th>Status</th><th>Aksi</th></tr></thead>
           <tbody id="tbl-siswa"></tbody>
         </table></div>
       </div>
@@ -286,59 +283,6 @@
       </div>
     </div>
 
-    <!-- ============ RAPORT ============ -->
-    <div class="page" id="pg-raport">
-      <div class="card">
-        <div class="card-header"><i class="fas fa-file-invoice" style="color:var(--accent)"></i><div><div class="card-title">Raport Digital</div><div class="card-sub">Rekap nilai otomatis semua komponen</div></div><div class="ch-space"></div>
-          <select class="fc" style="width:120px;padding:6px 9px;font-size:11.5px" id="raportKelas" onchange="renderRaport()"></select>
-          <button class="btn btn-outline btn-sm" onclick="exportRaportCSV()"><i class="fas fa-download"></i> Export</button>
-          <button class="btn btn-primary btn-sm" onclick="printRaport()"><i class="fas fa-print"></i> Cetak</button>
-        </div>
-        <div class="tbl-wrap" id="tbl-raport-wrap"></div>
-      </div>
-    </div>
-
-    <!-- ============ KOMUNIKASI ============ -->
-    <div class="page" id="pg-komunikasi">
-      <div class="g2">
-        <div class="card" style="overflow:hidden">
-          <div class="card-header"><i class="fas fa-comments" style="color:var(--accent)"></i><div><div class="card-title">Pesan</div></div><div class="ch-space"></div>
-            <button class="btn btn-primary btn-sm" onclick="openModal('modalPesan')"><i class="fas fa-plus"></i> Pesan Baru</button>
-          </div>
-          <div class="chat-wrap">
-            <div class="chat-list-panel" id="chatList"></div>
-            <div class="chat-main">
-              <div class="chat-messages" id="chatMessages"><div class="empty" style="margin:auto"><i class="fas fa-comments"></i><p>Pilih percakapan</p></div></div>
-              <div class="chat-input-bar" id="chatInputBar" style="display:none">
-                <input class="chat-input" id="chatInput" placeholder="Tulis pesan..." onkeydown="if(event.key==='Enter')sendChat()">
-                <button class="btn btn-primary btn-sm" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><i class="fas fa-broadcast-tower" style="color:var(--accent2)"></i><div><div class="card-title">Broadcast Pengumuman</div><div class="card-sub">Kirim ke semua wali murid</div></div></div>
-          <div class="card-body">
-            <div class="fg"><label>Tujuan</label><select class="fc" id="bcast-tujuan"></select></div>
-            <div class="fg"><label>Jenis Pesan</label>
-              <select class="fc" id="bcast-jenis" onchange="templateBcast(this.value)">
-                <option value="">-- Pilih Template --</option>
-                <option value="info">Pengumuman Umum</option>
-                <option value="absen">Peringatan Absensi</option>
-                <option value="nilai">Informasi Nilai</option>
-                <option value="ulangan">Jadwal Ulangan</option>
-                <option value="rapat">Undangan Rapat</option>
-              </select>
-            </div>
-            <div class="fg"><label>Pesan</label><textarea class="fc" id="bcast-pesan" rows="6" placeholder="Tulis pengumuman..."></textarea></div>
-            <button class="btn btn-primary" style="width:100%" onclick="sendBroadcast()"><i class="fas fa-paper-plane"></i> Kirim Pengumuman</button>
-            <div style="margin-top:14px;font-size:11.5px;color:var(--muted)"><b>Riwayat Broadcast:</b></div>
-            <div id="bcast-history" style="margin-top:8px;max-height:160px;overflow-y:auto"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- ============ BANK SOAL ============ -->
     <div class="page" id="pg-banksoal">
       <div class="g4" id="soal-stats"></div>
@@ -395,13 +339,6 @@
             <div style="width:50px;height:50px;background:#d1fae5;border-radius:11px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:20px;color:var(--success)"><i class="fas fa-clipboard-list"></i></div>
             <div style="font-weight:800;font-size:13px">Rekap Absensi</div>
             <div style="font-size:11px;color:var(--muted);margin-top:3px">Cetak laporan kehadiran</div>
-          </div>
-        </div>
-        <div class="card" style="cursor:pointer" onclick="printRaport()">
-          <div class="card-body" style="text-align:center;padding:26px">
-            <div style="width:50px;height:50px;background:#ede9fe;border-radius:11px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:20px;color:var(--purple)"><i class="fas fa-id-card"></i></div>
-            <div style="font-weight:800;font-size:13px">Cetak Raport</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:3px">Raport digital semua siswa</div>
           </div>
         </div>
         <div class="card" style="cursor:pointer" onclick="printJurnal()">
@@ -515,15 +452,7 @@
         <div class="fg"><label>Kelas *</label><select class="fc" id="s-kelas"></select></div>
       </div>
       <div class="fg"><label>Nama Lengkap *</label><input class="fc" id="s-nama" placeholder="Nama lengkap siswa"></div>
-      <div class="fr2">
-        <div class="fg"><label>Jenis Kelamin</label><select class="fc" id="s-jk"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
-        <div class="fg"><label>Tanggal Lahir</label><input type="date" class="fc" id="s-tgl"></div>
-      </div>
-      <div class="fg"><label>Tempat Lahir</label><input class="fc" id="s-tmp" placeholder="Kota tempat lahir"></div>
-      <div class="fr2">
-        <div class="fg"><label>Nama Wali Murid</label><input class="fc" id="s-wali" placeholder="Nama orang tua/wali"></div>
-        <div class="fg"><label>No. WA Wali</label><input class="fc" id="s-wa" placeholder="08xx-xxxx-xxxx"></div>
-      </div>
+      <div class="fg"><label>Jenis Kelamin</label><select class="fc" id="s-jk"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
       <div class="fg"><label>Alamat</label><textarea class="fc" id="s-alamat" rows="2" placeholder="Alamat lengkap siswa"></textarea></div>
       <div class="fg"><label>Status</label><select class="fc" id="s-status"><option value="Aktif">Aktif</option><option value="Pindah">Pindah</option><option value="Keluar">Keluar</option></select></div>
     </div>
@@ -624,19 +553,6 @@
   </div>
 </div>
 
-<!-- Modal Pesan -->
-<div class="modal-overlay" id="modalPesan">
-  <div class="modal">
-    <div class="modal-header"><div class="modal-title">Pesan Baru</div><button class="modal-close" onclick="closeModal('modalPesan')">✕</button></div>
-    <div class="modal-body">
-      <div class="fg"><label>Kepada *</label><input class="fc" id="pm-kepada" placeholder="Nama penerima (Wali Murid, Guru Pak...)"></div>
-      <div class="fg"><label>Kategori</label><select class="fc" id="pm-kat"><option>Wali Murid</option><option>Rekan Guru</option><option>Kepala Sekolah</option><option>TU / Admin</option></select></div>
-      <div class="fg"><label>Pesan Pertama</label><textarea class="fc" id="pm-pesan" rows="3" placeholder="Isi pesan..."></textarea></div>
-    </div>
-    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modalPesan')">Batal</button><button class="btn btn-primary" onclick="buatPercakapan()"><i class="fas fa-paper-plane"></i> Kirim</button></div>
-  </div>
-</div>
-
 <!-- Modal Detail Siswa -->
 <div class="modal-overlay" id="modalDetailSiswa">
   <div class="modal" style="max-width:640px">
@@ -655,6 +571,6 @@
   </div>
 </div>
 
-<script src="js/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
