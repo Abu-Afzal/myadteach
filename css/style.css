@@ -190,25 +190,6 @@ textarea.fc{resize:vertical}
 .toast.warn{border-left-color:var(--warning)}
 @keyframes toastIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
 
-/* CHAT */
-.chat-wrap{display:grid;grid-template-columns:240px 1fr;height:420px;gap:0;overflow:hidden}
-.chat-list-panel{border-right:1px solid var(--border);overflow-y:auto}
-.chat-item{display:flex;align-items:center;gap:9px;padding:10px 13px;cursor:pointer;border-bottom:1px solid #f8fafc;transition:background .14s}
-.chat-item:hover,.chat-item.active{background:#f0f4fb}
-.c-name{font-size:12px;font-weight:700}
-.c-prev{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;margin-top:1px}
-.c-time{font-size:10px;color:var(--muted);margin-left:auto;flex-shrink:0}
-.c-unread{background:var(--accent);color:#fff;font-size:9px;font-weight:800;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-.chat-main{display:flex;flex-direction:column}
-.chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:9px;background:#f8fafc}
-.msg{max-width:72%;padding:9px 12px;border-radius:11px;font-size:12px;line-height:1.5}
-.msg-in{background:#fff;color:var(--text);border-bottom-left-radius:3px;align-self:flex-start;border:1px solid var(--border)}
-.msg-out{background:var(--accent);color:#fff;border-bottom-right-radius:3px;align-self:flex-end}
-.msg-time{font-size:10px;opacity:.6;margin-top:3px;display:block}
-.chat-input-bar{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;background:#fff}
-.chat-input{flex:1;border:1px solid var(--border);border-radius:8px;padding:7px 11px;font-size:12px;font-family:inherit;outline:none}
-.chat-input:focus{border-color:var(--accent)}
-
 /* RPP CARD */
 .rpp-card{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:9px;display:flex;align-items:center;gap:12px;transition:box-shadow .18s,border-color .18s;cursor:pointer}
 .rpp-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.07);border-color:var(--accent)}
@@ -252,8 +233,6 @@ textarea.fc{resize:vertical}
   .g4,.g3{grid-template-columns:repeat(2,1fr)}
   .g2{grid-template-columns:1fr}
   .fr2,.fr3{grid-template-columns:1fr}
-  .chat-wrap{grid-template-columns:1fr}
-  .chat-list-panel{display:none}
   .menu-toggle{display:flex!important}
 }
 .menu-toggle{display:none;width:34px;height:34px;border-radius:8px;background:var(--bg);border:1px solid var(--border);align-items:center;justify-content:center;cursor:pointer;font-size:15px;color:var(--text)}
