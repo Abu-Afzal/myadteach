@@ -6,7 +6,7 @@
 <title>My AdTeach — Aplikasi Administrasi Guru</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -41,7 +41,7 @@
   <div class="sidebar-footer">
     <div class="teacher-card">
       <div class="t-avatar" id="t-av">RW</div>
-      <div><div class="t-name" id="t-name">Bu Rahma, S.Pd</div><div class="t-role" id="t-role">Guru IPA · Kelas 7A</div></div>
+      <div><div class="t-name" id="t-name">Nama Guru</div><div class="t-role" id="t-role">Mata Pelajaran</div></div>
     </div>
   </div>
 </aside>
@@ -96,7 +96,7 @@
           <button class="btn btn-primary btn-sm" onclick="openModal('modalKelas')"><i class="fas fa-plus"></i> Tambah Kelas</button>
         </div>
         <div class="tbl-wrap"><table>
-          <thead><tr><th>Kelas</th><th>Mata Pelajaran</th><th>Wali Kelas</th><th>Jml Siswa</th><th>Rata Nilai</th><th>% Hadir</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>Jenjang</th><th>Kelas</th><th>Mata Pelajaran</th><th>Wali Kelas</th><th>Jml Siswa</th><th>Rata Nilai</th><th>% Hadir</th><th>Aksi</th></tr></thead>
           <tbody id="tbl-kelas"></tbody>
         </table></div>
       </div>
@@ -208,7 +208,7 @@
               <div class="fg"><label>Tanggal</label><input type="date" class="fc" id="j-tgl"></div>
               <div class="fg"><label>Kelas</label><select class="fc" id="j-kelas"></select></div>
             </div>
-            <div class="fg"><label>Mata Pelajaran</label><input class="fc" id="j-mapel" placeholder="IPA, Matematika..."></div>
+            <div class="fg"><label>Mata Pelajaran</label><input class="fc" id="j-mapel" placeholder="Matematika, Bahasa Indonesia, Fisika..."></div>
             <div class="fg"><label>Topik / KD</label><input class="fc" id="j-topik" placeholder="Kompetensi dasar atau topik pembelajaran"></div>
             <div class="fg"><label>Kegiatan Pembelajaran</label><textarea class="fc" id="j-kegiatan" rows="3" placeholder="Deskripsikan kegiatan belajar mengajar..."></textarea></div>
             <div class="fg"><label>Metode Pembelajaran</label>
@@ -242,7 +242,7 @@
           <div class="card-header"><i class="fas fa-magic" style="color:var(--purple)"></i><div><div class="card-title">Generate RPP / Modul Ajar</div></div></div>
           <div class="card-body">
             <div class="fg"><label>Kelas</label><select class="fc" id="rpp-kelas"></select></div>
-            <div class="fg"><label>Mata Pelajaran</label><input class="fc" id="rpp-mapel" placeholder="IPA, Matematika, Bahasa Indonesia..."></div>
+            <div class="fg"><label>Mata Pelajaran</label><input class="fc" id="rpp-mapel" placeholder="Matematika, Bahasa Indonesia, Fisika, Akidah Akhlak..."></div>
             <div class="fg"><label>Kompetensi Dasar / Tujuan Pembelajaran</label><textarea class="fc" id="rpp-kd" rows="2" placeholder="Misal: 3.7 Menganalisis interaksi antara makhluk hidup dan lingkungannya"></textarea></div>
             <div class="fr2">
               <div class="fg"><label>Alokasi Waktu</label><select class="fc" id="rpp-waktu"><option>1 x 45 menit</option><option>2 x 45 menit</option><option>3 x 45 menit</option></select></div>
@@ -381,7 +381,7 @@
               <div class="fg"><label>NIP</label><input class="fc" id="set-nip" placeholder="NIP guru"></div>
             </div>
             <div class="fr2">
-              <div class="fg"><label>Mata Pelajaran</label><input class="fc" id="set-mapel" placeholder="IPA, Matematika..."></div>
+              <div class="fg"><label>Mata Pelajaran</label><input class="fc" id="set-mapel" placeholder="Matematika, Bahasa Indonesia, Fisika..."></div>
               <div class="fg"><label>No. HP / WA</label><input class="fc" id="set-hp" placeholder="08xx-xxxx-xxxx"></div>
             </div>
             <div class="fg"><label>Email</label><input class="fc" id="set-email" type="email" placeholder="guru@sekolah.sch.id"></div>
@@ -427,9 +427,10 @@
     <div class="modal-body">
       <input type="hidden" id="kelas-edit-id">
       <div class="fr2">
-        <div class="fg"><label>Nama Kelas *</label><input class="fc" id="k-nama" placeholder="Contoh: 7A, 8B"></div>
-        <div class="fg"><label>Mata Pelajaran *</label><input class="fc" id="k-mapel" placeholder="IPA, Matematika..."></div>
+        <div class="fg"><label>Jenjang *</label><select class="fc" id="k-jenjang"><option value="SD">SD / Sederajat</option><option value="SMP">SMP / Sederajat</option><option value="SMA">SMA / SMK / Sederajat</option></select></div>
+        <div class="fg"><label>Nama Kelas *</label><input class="fc" id="k-nama" placeholder="Contoh: 4A, 8B, X IPA 1"></div>
       </div>
+      <div class="fg"><label>Mata Pelajaran *</label><input class="fc" id="k-mapel" placeholder="Matematika, Bahasa Indonesia, Fisika..."></div>
       <div class="fg"><label>Wali Kelas</label><input class="fc" id="k-wali" placeholder="Nama wali kelas"></div>
       <div class="fr2">
         <div class="fg"><label>Tahun Ajaran</label><input class="fc" id="k-ta" placeholder="2025/2026"></div>
@@ -475,7 +476,7 @@
         <div class="fg"><label>Jam Selesai</label><input type="time" class="fc" id="jd-selesai"></div>
       </div>
       <div class="fr2">
-        <div class="fg"><label>Mata Pelajaran</label><input class="fc" id="jd-mapel" placeholder="IPA, Matematika..."></div>
+        <div class="fg"><label>Mata Pelajaran</label><input class="fc" id="jd-mapel" placeholder="Matematika, Bahasa Indonesia, Fisika..."></div>
         <div class="fg"><label>Ruang</label><input class="fc" id="jd-ruang" placeholder="Ruang 12, Lab..."></div>
       </div>
       <div class="fg"><label>Materi / Topik</label><input class="fc" id="jd-materi" placeholder="Topik yang akan diajarkan"></div>
@@ -527,12 +528,12 @@
     <div class="modal-body">
       <input type="hidden" id="soal-edit-id">
       <div class="fr3">
-        <div class="fg"><label>Mapel *</label><input class="fc" id="sl-mapel" placeholder="IPA..."></div>
+        <div class="fg"><label>Mapel *</label><input class="fc" id="sl-mapel" placeholder="Matematika, Fisika, Ekonomi..."></div>
         <div class="fg"><label>Jenis *</label><select class="fc" id="sl-jenis"><option value="PG">Pilihan Ganda</option><option value="Essay">Essay</option><option value="Isian">Isian Singkat</option></select></div>
         <div class="fg"><label>Tingkat</label><select class="fc" id="sl-tingkat"><option>Mudah</option><option>Sedang</option><option>Sulit</option></select></div>
       </div>
       <div class="fr2">
-        <div class="fg"><label>Kelas</label><input class="fc" id="sl-kelas" placeholder="7, 8, 9"></div>
+        <div class="fg"><label>Kelas</label><input class="fc" id="sl-kelas" placeholder="Contoh: 4, 8, X, XII"></div>
         <div class="fg"><label>Topik</label><input class="fc" id="sl-topik" placeholder="Ekosistem, Fotosintesis..."></div>
       </div>
       <div class="fg"><label>Pertanyaan *</label><textarea class="fc" id="sl-pertanyaan" rows="3" placeholder="Tulis pertanyaan di sini..."></textarea></div>
@@ -571,6 +572,6 @@
   </div>
 </div>
 
-<script src="js/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
