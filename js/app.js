@@ -15,8 +15,8 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 let state = {
   kelas:[], siswa:[], jadwal:[], absensi:{}, nilai:{}, jurnal:[],
   rpp:[], tugas:[], nilaiTugas:{}, soal:[],
-  profil:{nama:'Bu Rahma, S.Pd',nip:'19850512201001',mapel:'IPA',hp:'',email:''},
-  sekolah:{nama:'SMP Negeri 1',npsn:'',ta:'2025/2026',sem:'Genap',kurk:'Kurikulum Merdeka',kkm:75,alamat:''},
+  profil:{nama:'',nip:'',mapel:'',hp:'',email:''},
+  sekolah:{nama:'',npsn:'',ta:'2025/2026',sem:'Genap',kurk:'Kurikulum Merdeka',kkm:75,alamat:''},
   currentPage:'dashboard', calYear:0, calMonth:0,
   nilaiKolom:{}, editTugasId:null
 };
@@ -198,6 +198,7 @@ function saveKelas(){
   const id=document.getElementById('kelas-edit-id').value;
   const obj={
     id:id||uid(), nama:document.getElementById('k-nama').value.trim(),
+    jenjang:document.getElementById('k-jenjang').value,
     mapel:document.getElementById('k-mapel').value.trim(),
     wali:document.getElementById('k-wali').value.trim(),
     ta:document.getElementById('k-ta').value.trim(),
@@ -214,6 +215,7 @@ function editKelas(id){
   const k=state.kelas.find(x=>x.id===id);if(!k)return;
   document.getElementById('kelas-edit-id').value=id;
   document.getElementById('k-nama').value=k.nama;document.getElementById('k-mapel').value=k.mapel;
+  document.getElementById('k-jenjang').value=k.jenjang||'SD';
   document.getElementById('k-wali').value=k.wali||'';document.getElementById('k-ta').value=k.ta||'';
   document.getElementById('k-ruang').value=k.ruang||'';document.getElementById('k-desk').value=k.desk||'';
   document.getElementById('modalKelasTitle').textContent='Edit Kelas '+k.nama;
@@ -227,12 +229,14 @@ function hapusKelas(id){
 }
 function renderKelas(){
   const tbody=document.getElementById('tbl-kelas');
-  if(!state.kelas.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">Belum ada kelas. Tambah kelas terlebih dahulu.</td></tr>';return}
+  if(!state.kelas.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted)">Belum ada kelas. Tambah kelas terlebih dahulu.</td></tr>';return}
+  const jenjangBadge={SD:'bg-info',SMP:'bg-warning',SMA:'bg-purple'};
   tbody.innerHTML=state.kelas.map(k=>{
     const siswaK=state.siswa.filter(s=>s.kelas===k.id&&s.status==='Aktif');
     const avgNilai=getAvgNilaiKelas(k.id);
     const pctHadir=getAvgHadirKelas(k.id);
     return `<tr>
+      <td><span class="badge ${jenjangBadge[k.jenjang]||'bg-gray'}">${k.jenjang||'-'}</span></td>
       <td><b>${k.nama}</b></td>
       <td>${k.mapel}</td>
       <td>${k.wali||'-'}</td>
