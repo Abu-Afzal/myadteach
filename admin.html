@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — My AdTeach</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{
+  --navy:#0f2044;--accent:#4f8ef7;--success:#34d399;--danger:#f87171;--warning:#fbbf24;
+  --bg:#f0f4fb;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:12px}
+.topbar h1{font-size:15px;font-weight:800}
+.topbar .sub{font-size:11px;color:var(--muted)}
+.topbar .spacer{flex:1}
+.btn{padding:8px 14px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.btn-outline{background:#fff;color:var(--text);border:1px solid var(--border)}
+.btn-success{background:#d1fae5;color:#065f46}
+.btn-danger{background:#fee2e2;color:#991b1b}
+.btn-sm{padding:6px 11px;font-size:11px}
+.wrap{max-width:920px;margin:0 auto;padding:24px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.sc{background:#fff;border-radius:13px;padding:16px 18px;border:1px solid var(--border)}
+.sc-label{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:5px}
+.sc-val{font-size:22px;font-weight:800}
+.card{background:#fff;border-radius:13px;border:1px solid var(--border);overflow:hidden;margin-bottom:18px}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:800}
+table{width:100%;border-collapse:collapse}
+thead th{background:#f8fafc;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;padding:9px 14px;border-bottom:1px solid var(--border)}
+tbody td{padding:11px 14px;font-size:12.5px;border-bottom:1px solid #f1f5f9}
+.badge{padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700}
+.bg-warning{background:#fef3c7;color:#92400e}
+.bg-success{background:#d1fae5;color:#065f46}
+.empty{text-align:center;padding:30px;color:var(--muted);font-size:12.5px}
+.loading{text-align:center;padding:40px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>Panel Admin — My AdTeach</h1>
+    <div class="sub" id="adminEmail">Memuat...</div>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn btn-outline" onclick="adminLogout()"><i class="fas fa-right-from-bracket"></i> Keluar</button>
+</div>
+
+<div class="wrap">
+  <div class="g3">
+    <div class="sc"><div class="sc-label">Menunggu Persetujuan</div><div class="sc-val" id="stat-pending">-</div></div>
+    <div class="sc"><div class="sc-label">Guru Disetujui</div><div class="sc-val" id="stat-approved">-</div></div>
+    <div class="sc"><div class="sc-label">Total Akun</div><div class="sc-val" id="stat-total">-</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Menunggu Persetujuan</div>
+    <table>
+      <thead><tr><th>Nama</th><th>Email</th><th>Status</th><th>Aksi</th></tr></thead>
+      <tbody id="tbl-pending"><tr><td colspan="4" class="loading">Memuat data...</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Guru Terdaftar (Disetujui)</div>
+    <table>
+      <thead><tr><th>Nama</th><th>Email</th><th>Status</th><th>Aksi</th></tr></thead>
+      <tbody id="tbl-approved"><tr><td colspan="4" class="loading">Memuat data...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
