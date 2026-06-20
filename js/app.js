@@ -1,12 +1,35 @@
 // =============================================
 //  MY ADTEACH — FULL FUNCTIONAL ENGINE
+//  (Firestore edition)
 // =============================================
 
-// ---------- DB (localStorage) ----------
+// ---------- DB (Firestore) ----------
+// Setiap field disimpan sebagai satu dokumen di koleksi users/{uid}/data/{key}
+// supaya pola pemanggilan tetap sama persis seperti versi localStorage sebelumnya.
+let _currentUid=null;
+
 const DB = {
-  get(k){try{return JSON.parse(localStorage.getItem('mat_'+k)||'null')}catch{return null}},
-  set(k,v){localStorage.setItem('mat_'+k,JSON.stringify(v))},
-  del(k){localStorage.removeItem('mat_'+k)}
+  async get(k){
+    if(!_currentUid)return null;
+    try{
+      const snap=await db.collection('users').doc(_currentUid).collection('data').doc(k).get();
+      if(!snap.exists)return null;
+      const d=snap.data();
+      return d&&('value' in d)?d.value:null;
+    }catch(e){console.error('DB.get gagal untuk',k,e);return null}
+  },
+  async set(k,v){
+    if(!_currentUid)return;
+    try{
+      await db.collection('users').doc(_currentUid).collection('data').doc(k).set({value:v});
+    }catch(e){console.error('DB.set gagal untuk',k,e);toast('Gagal menyimpan ke server. Periksa koneksi internet.','error')}
+  },
+  async del(k){
+    if(!_currentUid)return;
+    try{
+      await db.collection('users').doc(_currentUid).collection('data').doc(k).delete();
+    }catch(e){console.error('DB.del gagal untuk',k,e)}
+  }
 };
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
@@ -21,20 +44,25 @@ let state = {
   nilaiKolom:{}, editTugasId:null
 };
 
-function loadState(){
-  ['kelas','siswa','jadwal','absensi','nilai','jurnal','rpp','tugas','nilaiTugas','soal','profil','sekolah','nilaiKolom'].forEach(k=>{
-    const v=DB.get(k);if(v!==null)state[k]=v;
-  });
+const STATE_KEYS=['kelas','siswa','jadwal','absensi','nilai','jurnal','rpp','tugas','nilaiTugas','soal','profil','sekolah','nilaiKolom'];
+
+async function loadState(){
+  await Promise.all(STATE_KEYS.map(async k=>{
+    const v=await DB.get(k);
+    if(v!==null)state[k]=v;
+  }));
 }
 function saveState(){
-  ['kelas','siswa','jadwal','absensi','nilai','jurnal','rpp','tugas','nilaiTugas','soal','profil','sekolah','nilaiKolom'].forEach(k=>{
+  // Fire-and-forget: UI tidak menunggu network, tapi tiap penulisan tetap diawasi errornya
+  STATE_KEYS.forEach(k=>{
     DB.set(k,state[k]);
   });
 }
 
 // ---------- INIT ----------
-function init(){
-  loadState();
+async function init(){
+  showAppLoading(true);
+  await loadState();
   const now=new Date();
   state.calYear=now.getFullYear();state.calMonth=now.getMonth();
   document.getElementById('dateChip').textContent=now.toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
@@ -47,6 +75,7 @@ function init(){
   document.getElementById('j-tgl').value=toDateStr(now);
   document.getElementById('tg-tgl').value=toDateStr(now);
   initAlarmEngine();
+  showAppLoading(false);
 }
 
 function toDateStr(d){return d.toISOString().slice(0,10)}
@@ -1326,8 +1355,9 @@ function globalSearchFn(q){
 
 // ============ RESET ============
 function resetData(){
-  confirm2('RESET SEMUA DATA? Tindakan ini tidak bisa dibatalkan dan akan menghapus semua data aplikasi.',()=>{
-    ['kelas','siswa','jadwal','absensi','nilai','jurnal','rpp','tugas','nilaiTugas','soal','nilaiKolom'].forEach(k=>DB.del(k));
+  confirm2('RESET SEMUA DATA? Tindakan ini tidak bisa dibatalkan dan akan menghapus semua data aplikasi.',async ()=>{
+    showAppLoading(true);
+    await Promise.all(['kelas','siswa','jadwal','absensi','nilai','jurnal','rpp','tugas','nilaiTugas','soal','nilaiKolom'].map(k=>DB.del(k)));
     location.reload();
   });
 }
@@ -1337,5 +1367,38 @@ document.getElementById('sl-jenis').addEventListener('change',function(){
   document.getElementById('sl-opsi-wrap').style.display=this.value==='PG'?'block':'none';
 });
 
-// ============ START ============
-init();
+// ============ START — AUTH GUARD ============
+auth.onAuthStateChanged(async (user)=>{
+  if(!user){
+    window.location.href='login.html';
+    return;
+  }
+  try{
+    const docSnap=await db.collection('users').doc(user.uid).get();
+    if(!docSnap.exists||docSnap.data().isApproved!==true){
+      await auth.signOut();
+      window.location.href='login.html';
+      return;
+    }
+    _currentUid=user.uid;
+    const userData=docSnap.data();
+    document.getElementById('userBarEmail').textContent=userData.email||user.email;
+    init();
+  }catch(e){
+    console.error('Auth guard gagal:',e);
+    showAppLoading(false);
+    toast('Gagal memverifikasi akun. Coba muat ulang halaman.','error');
+  }
+});
+
+function showAppLoading(show){
+  const el=document.getElementById('appLoadingOverlay');
+  if(el)el.style.display=show?'flex':'none';
+}
+
+function doAppLogout(){
+  confirm2('Keluar dari akun ini?',async ()=>{
+    await auth.signOut();
+    window.location.href='login.html';
+  });
+}
