@@ -105,33 +105,64 @@ function renderNotifPermStatus(){
   el.textContent=perm==='granted'?'Diizinkan ✓':perm==='denied'?'Ditolak ✗':'Belum diizinkan';
 }
 
-// Bunyikan alarm pakai Web Audio API (tidak butuh file suara eksternal)
-function playAlarmSound(){
+// Bunyikan beep singkat (penarik perhatian) sebelum suara bicara
+function playAlarmBeep(){
+  return new Promise((resolve)=>{
+    try{
+      if(!_alarmAudioCtx)_alarmAudioCtx=new (window.AudioContext||window.webkitAudioContext)();
+      const ctx=_alarmAudioCtx;
+      const playBeep=(startTime,freq)=>{
+        const osc=ctx.createOscillator();
+        const gain=ctx.createGain();
+        osc.type='sine';
+        osc.frequency.value=freq;
+        gain.gain.setValueAtTime(0.0001,startTime);
+        gain.gain.exponentialRampToValueAtTime(0.35,startTime+0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001,startTime+0.35);
+        osc.connect(gain);gain.connect(ctx.destination);
+        osc.start(startTime);osc.stop(startTime+0.4);
+      };
+      const now=ctx.currentTime;
+      // 2 beep ganda (nada naik-turun) — lebih singkat dari versi sebelumnya agar tidak menunda suara bicara
+      for(let i=0;i<2;i++){
+        playBeep(now+i*0.55,880);
+        playBeep(now+i*0.55+0.25,660);
+      }
+      setTimeout(resolve,1300);
+    }catch(e){console.error('Gagal memutar beep:',e);resolve()}
+  });
+}
+
+// Ucapkan kalimat pengingat lewat suara bicara (Web Speech API — tanpa file suara eksternal)
+function speakAlarmMessage(kelasNama,mapel){
+  if(!('speechSynthesis' in window)){
+    console.warn('Browser ini tidak mendukung suara bicara (Web Speech API)');
+    return;
+  }
+  const mapelText=mapel?`, mata pelajaran ${mapel},`:'';
+  const kalimat=`Sekarang saatnya Anda mengajar di kelas ${kelasNama}${mapelText} Terima kasih!`;
   try{
-    if(!_alarmAudioCtx)_alarmAudioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    const ctx=_alarmAudioCtx;
-    const playBeep=(startTime,freq)=>{
-      const osc=ctx.createOscillator();
-      const gain=ctx.createGain();
-      osc.type='sine';
-      osc.frequency.value=freq;
-      gain.gain.setValueAtTime(0.0001,startTime);
-      gain.gain.exponentialRampToValueAtTime(0.35,startTime+0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001,startTime+0.35);
-      osc.connect(gain);gain.connect(ctx.destination);
-      osc.start(startTime);osc.stop(startTime+0.4);
-    };
-    const now=ctx.currentTime;
-    // 3 rangkaian beep ganda (nada naik-turun) supaya jelas terdengar sebagai alarm
-    for(let i=0;i<3;i++){
-      playBeep(now+i*0.9,880);
-      playBeep(now+i*0.9+0.42,660);
-    }
-  }catch(e){console.error('Gagal memutar alarm:',e)}
+    window.speechSynthesis.cancel(); // hentikan antrian ucapan sebelumnya jika ada
+    const utter=new SpeechSynthesisUtterance(kalimat);
+    utter.lang='id-ID';
+    utter.rate=0.95;
+    utter.pitch=1;
+    utter.volume=1;
+    // Pilih voice Bahasa Indonesia jika tersedia di browser/OS
+    const voices=window.speechSynthesis.getVoices();
+    const idVoice=voices.find(v=>v.lang==='id-ID')||voices.find(v=>v.lang.startsWith('id'));
+    if(idVoice)utter.voice=idVoice;
+    window.speechSynthesis.speak(utter);
+  }catch(e){console.error('Gagal memutar suara bicara:',e)}
+}
+
+async function playAlarmSound(kelasNama,mapel){
+  await playAlarmBeep();
+  speakAlarmMessage(kelasNama||'Anda',mapel||'');
 }
 
 function fireScheduleAlarm(jadwalItem,kelasNama){
-  playAlarmSound();
+  playAlarmSound(kelasNama,jadwalItem.mapel);
   toast(`🔔 Saatnya mengajar ${kelasNama} (${jadwalItem.mulai})`,'warn');
   if('Notification' in window && Notification.permission==='granted'){
     try{
@@ -167,10 +198,14 @@ function initAlarmEngine(){
   // Cek setiap 15 detik agar presisi menit tetap terjaga tanpa terlalu berat
   setInterval(checkScheduleAlarms,15000);
   checkScheduleAlarms();
+  // Preload daftar voice TTS (di beberapa browser voices baru terisi setelah event ini)
+  if('speechSynthesis' in window){
+    window.speechSynthesis.onvoiceschanged=()=>{window.speechSynthesis.getVoices()};
+  }
 }
 
 function testAlarmSound(){
-  playAlarmSound();
+  playAlarmSound('Contoh',  'Contoh Mapel');
   toast('Mencoba bunyi alarm...');
 }
 
