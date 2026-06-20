@@ -46,9 +46,133 @@ function init(){
   document.getElementById('absTgl').value=toDateStr(now);
   document.getElementById('j-tgl').value=toDateStr(now);
   document.getElementById('tg-tgl').value=toDateStr(now);
+  initAlarmEngine();
 }
 
 function toDateStr(d){return d.toISOString().slice(0,10)}
+
+// =============================================
+//  ALARM JADWAL MENGAJAR
+// =============================================
+let _alarmLastFiredKey=null;
+let _alarmAudioCtx=null;
+
+function isAlarmEnabled(){
+  return state.sekolah && state.sekolah.alarmAktif===true;
+}
+
+function setAlarmEnabled(val){
+  if(!state.sekolah)state.sekolah={};
+  state.sekolah.alarmAktif=val;
+  saveState();
+  renderAlarmStatusBadge();
+}
+
+function renderAlarmStatusBadge(){
+  const badge=document.getElementById('alarm-status-badge');
+  if(!badge)return;
+  if(isAlarmEnabled()){
+    badge.innerHTML='<i class="fas fa-bell"></i> Alarm Aktif';
+    badge.className='badge bg-success';
+  } else {
+    badge.innerHTML='<i class="fas fa-bell-slash"></i> Alarm Nonaktif';
+    badge.className='badge bg-gray';
+  }
+  const toggle=document.getElementById('set-alarm-toggle');
+  if(toggle)toggle.checked=isAlarmEnabled();
+}
+
+function requestNotifPermission(){
+  if(!('Notification' in window)){
+    toast('Browser ini tidak mendukung notifikasi sistem','error');
+    return;
+  }
+  Notification.requestPermission().then(perm=>{
+    if(perm==='granted'){
+      toast('Izin notifikasi diberikan. Alarm akan tampil meski berpindah tab.');
+    } else {
+      toast('Izin notifikasi ditolak. Alarm tetap berbunyi selama tab ini terbuka.','warn');
+    }
+    renderNotifPermStatus();
+  });
+}
+
+function renderNotifPermStatus(){
+  const el=document.getElementById('notif-perm-status');
+  if(!el)return;
+  if(!('Notification' in window)){el.textContent='Tidak didukung browser ini';return}
+  const perm=Notification.permission;
+  el.textContent=perm==='granted'?'Diizinkan ✓':perm==='denied'?'Ditolak ✗':'Belum diizinkan';
+}
+
+// Bunyikan alarm pakai Web Audio API (tidak butuh file suara eksternal)
+function playAlarmSound(){
+  try{
+    if(!_alarmAudioCtx)_alarmAudioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const ctx=_alarmAudioCtx;
+    const playBeep=(startTime,freq)=>{
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.type='sine';
+      osc.frequency.value=freq;
+      gain.gain.setValueAtTime(0.0001,startTime);
+      gain.gain.exponentialRampToValueAtTime(0.35,startTime+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001,startTime+0.35);
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.start(startTime);osc.stop(startTime+0.4);
+    };
+    const now=ctx.currentTime;
+    // 3 rangkaian beep ganda (nada naik-turun) supaya jelas terdengar sebagai alarm
+    for(let i=0;i<3;i++){
+      playBeep(now+i*0.9,880);
+      playBeep(now+i*0.9+0.42,660);
+    }
+  }catch(e){console.error('Gagal memutar alarm:',e)}
+}
+
+function fireScheduleAlarm(jadwalItem,kelasNama){
+  playAlarmSound();
+  toast(`🔔 Saatnya mengajar ${kelasNama} (${jadwalItem.mulai})`,'warn');
+  if('Notification' in window && Notification.permission==='granted'){
+    try{
+      new Notification('Waktunya Mengajar!',{
+        body:`${kelasNama} · ${jadwalItem.mapel||''} · ${jadwalItem.mulai}${jadwalItem.ruang?' · '+jadwalItem.ruang:''}`,
+        icon:'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/svgs/solid/graduation-cap.svg',
+        tag:'myadteach-alarm'
+      });
+    }catch(e){console.error('Gagal menampilkan notifikasi:',e)}
+  }
+}
+
+function checkScheduleAlarms(){
+  if(!isAlarmEnabled())return;
+  const now=new Date();
+  const hariMap={0:'Minggu',1:'Senin',2:'Selasa',3:'Rabu',4:'Kamis',5:'Jumat',6:'Sabtu'};
+  const hariIni=hariMap[now.getDay()];
+  const jamSekarang=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  const fireKey=toDateStr(now)+'_'+jamSekarang;
+  if(_alarmLastFiredKey===fireKey)return; // sudah dicek menit ini, hindari duplikasi
+  _alarmLastFiredKey=fireKey;
+  state.jadwal.forEach(j=>{
+    if(j.hari===hariIni && j.mulai===jamSekarang){
+      const k=state.kelas.find(k=>k.id===j.kelas);
+      fireScheduleAlarm(j,k?.nama||'Kelas');
+    }
+  });
+}
+
+function initAlarmEngine(){
+  renderAlarmStatusBadge();
+  renderNotifPermStatus();
+  // Cek setiap 15 detik agar presisi menit tetap terjaga tanpa terlalu berat
+  setInterval(checkScheduleAlarms,15000);
+  checkScheduleAlarms();
+}
+
+function testAlarmSound(){
+  playAlarmSound();
+  toast('Mencoba bunyi alarm...');
+}
 
 // ---------- NAVIGATION ----------
 const PAGE_INFO={
@@ -169,6 +293,8 @@ function renderPengaturan(){
   av.textContent=ini;av.style.background=`linear-gradient(135deg,${col},${col}cc)`;
   document.getElementById('profil-nama-disp').textContent=p.nama||'-';
   document.getElementById('profil-nip-disp').textContent='NIP: '+(p.nip||'-');
+  renderAlarmStatusBadge();
+  renderNotifPermStatus();
 }
 function saveProfil(){
   state.profil={
