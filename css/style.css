@@ -250,3 +250,15 @@ textarea.fc{resize:vertical}
 
 /* NILAI CELL */
 .val-cell{font-weight:800;font-size:12.5px}
+
+/* APP LOADING OVERLAY */
+.app-loading-overlay{position:fixed;inset:0;background:linear-gradient(170deg,#0d1d40 0%,#152d5e 55%,#1a3870 100%);z-index:5000;display:flex;align-items:center;justify-content:center}
+.app-loading-box{text-align:center;color:#fff}
+.app-loading-box i{font-size:40px;margin-bottom:14px;display:block;opacity:.9}
+.app-loading-box .spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
+.app-loading-box p{font-size:13px;color:rgba(255,255,255,.75);font-weight:500}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* USER BAR */
+.user-bar{display:flex;align-items:center;gap:9px}
+.user-bar-email{font-size:11px;color:var(--muted);font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
