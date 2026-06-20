@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masuk — My AdTeach</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{
+  --navy:#0f2044;--accent:#4f8ef7;--accent2:#f7a84f;--success:#34d399;--danger:#f87171;
+  --bg:#f0f4fb;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{background:#fff;border-radius:18px;width:100%;max-width:400px;box-shadow:0 24px 70px rgba(15,32,68,.12);overflow:hidden}
+.auth-brand{padding:28px 28px 0;text-align:center}
+.auth-brand-icon{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#4f8ef7,#2355c7);display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;margin:0 auto 12px;box-shadow:0 8px 22px rgba(79,142,247,.35)}
+.auth-brand h1{font-size:18px;font-weight:800;color:var(--navy)}
+.auth-brand p{font-size:12px;color:var(--muted);margin-top:3px}
+.auth-tabs{display:flex;margin:22px 28px 0;background:var(--bg);border-radius:10px;padding:4px}
+.auth-tab{flex:1;text-align:center;padding:9px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .18s}
+.auth-tab.active{background:#fff;color:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.auth-body{padding:22px 28px 28px}
+.auth-panel{display:none}
+.auth-panel.active{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fg{margin-bottom:14px}
+.fg label{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:5px;display:block}
+.fc-wrap{position:relative}
+.fc{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;color:var(--text);outline:none;transition:border-color .18s}
+.fc:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,.1)}
+.pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10.5px;font-weight:700;color:var(--accent);cursor:pointer;background:none;border:none;font-family:inherit}
+.btn{width:100%;padding:11px;border-radius:9px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .18s}
+.btn-primary{background:linear-gradient(90deg,#11998e,#38ef7d);color:#fff}
+.btn-primary:hover{filter:brightness(1.05)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.forgot-link{text-align:center;margin-top:14px}
+.forgot-link a{font-size:11.5px;color:var(--accent);text-decoration:none;font-weight:600;cursor:pointer}
+.auth-msg{font-size:12px;padding:10px 12px;border-radius:8px;margin-bottom:14px;display:none;align-items:flex-start;gap:8px}
+.auth-msg.show{display:flex}
+.auth-msg.error{background:#fee2e2;color:#991b1b}
+.auth-msg.success{background:#d1fae5;color:#065f46}
+.auth-msg.info{background:#dbeafe;color:#1e40af}
+.pending-box{text-align:center;padding:10px 0}
+.pending-icon{width:56px;height:56px;border-radius:50%;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:22px;color:#92400e;margin:0 auto 14px}
+.pending-box h3{font-size:14.5px;font-weight:800;color:var(--navy);margin-bottom:6px}
+.pending-box p{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<div class="auth-card">
+  <div class="auth-brand">
+    <div class="auth-brand-icon"><i class="fas fa-graduation-cap"></i></div>
+    <h1>My AdTeach</h1>
+    <p>Administrasi Guru Pro</p>
+  </div>
+
+  <div class="auth-tabs" id="authTabs">
+    <div class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">Masuk</div>
+    <div class="auth-tab" data-tab="register" onclick="switchAuthTab('register')">Daftar Akun</div>
+  </div>
+
+  <div class="auth-body">
+    <div class="auth-msg" id="authMsg"></div>
+
+    <!-- PANEL LOGIN -->
+    <div class="auth-panel active" id="panel-login">
+      <div class="fg">
+        <label>Email</label>
+        <input type="email" class="fc" id="login-email" placeholder="guru@sekolah.sch.id">
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <div class="fc-wrap">
+          <input type="password" class="fc" id="login-password" placeholder="Masukkan password">
+          <button type="button" class="pw-toggle" onclick="togglePw('login-password',this)">LIHAT</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btnLogin" onclick="doLogin()"><i class="fas fa-right-to-bracket"></i> Masuk</button>
+      <div class="forgot-link"><a onclick="doForgotPassword()">Lupa Password?</a></div>
+    </div>
+
+    <!-- PANEL REGISTER -->
+    <div class="auth-panel" id="panel-register">
+      <div class="fg">
+        <label>Nama Lengkap</label>
+        <input type="text" class="fc" id="reg-nama" placeholder="Nama lengkap + gelar">
+      </div>
+      <div class="fg">
+        <label>Email</label>
+        <input type="email" class="fc" id="reg-email" placeholder="guru@sekolah.sch.id">
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <div class="fc-wrap">
+          <input type="password" class="fc" id="reg-password" placeholder="Minimal 6 karakter">
+          <button type="button" class="pw-toggle" onclick="togglePw('reg-password',this)">LIHAT</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btnRegister" onclick="doRegister()"><i class="fas fa-user-plus"></i> Daftar</button>
+    </div>
+
+    <!-- PANEL PENDING APPROVAL -->
+    <div class="auth-panel" id="panel-pending">
+      <div class="pending-box">
+        <div class="pending-icon"><i class="fas fa-hourglass-half"></i></div>
+        <h3>Menunggu Persetujuan Admin</h3>
+        <p>Akun Anda berhasil dibuat, namun masih menunggu persetujuan admin sebelum bisa digunakan. Silakan hubungi admin sekolah Anda, atau coba masuk lagi nanti.</p>
+        <button class="btn btn-primary" style="background:#fff;color:var(--text);border:1px solid var(--border)" onclick="doLogout()"><i class="fas fa-arrow-left"></i> Kembali ke Halaman Masuk</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="login.js"></script>
+</body>
+</html>
