@@ -1380,8 +1380,12 @@ auth.onAuthStateChanged(async (user)=>{
       window.location.href='login.html';
       return;
     }
-    _currentUid=user.uid;
     const userData=docSnap.data();
+    if(userData.isAdmin===true){
+      window.location.href='admin.html';
+      return;
+    }
+    _currentUid=user.uid;
     document.getElementById('userBarEmail').textContent=userData.email||user.email;
     init();
   }catch(e){
