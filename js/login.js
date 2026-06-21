@@ -110,7 +110,9 @@ auth.onAuthStateChanged(async (user)=>{
       return;
     }
     const data=docSnap.data();
-    if(data.isApproved===true){
+    if(data.isAdmin===true){
+      window.location.href='admin.html';
+    } else if(data.isApproved===true){
       window.location.href='index.html';
     } else {
       setBtnLoading('btnLogin',false,'<i class="fas fa-right-to-bracket"></i> Masuk');
